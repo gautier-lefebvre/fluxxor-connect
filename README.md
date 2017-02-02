@@ -2,15 +2,15 @@
 
 Loose implementation of Redux's connect with Fluxxor.
 
-## installation
+## Installation
 
 ```
 npm install fluxxor-connect
 ```
 
-## usage
+## Usage
 
-### accessing stores
+### Accessing stores
 
 ```
 var React = require('react');
@@ -67,11 +67,25 @@ You can put the same store several times (to listen to different events).
 
 The name of the keys of the state must be unique, otherwise they will be overwritten.
 
-### accessing flux
+### Filtering state with your component's props
+
+The `state` method you give to `Connect` can take an additional parameter: the `props` of your component.
+You can use it to filter the state from the store using your component's props.
+
+```
+Connect({
+    store: 'FOO_STORE',
+    state: (store, ownProps) => ({
+        foo: store.foo + ownprops.bar
+    })
+})
+```
+
+### Accessing flux
 
 After using `Connect` on your component, you can access the `flux` variable using `this.props.flux`.
 
-## using non-transpiled module
+## Using non-transpiled module
 
 If you are already using tools to minify / transpile your code, you can use the non-transpiled version to reduce bundle size.
 
