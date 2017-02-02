@@ -2,6 +2,8 @@
 
 Loose implementation of Redux's connect with Fluxxor.
 
+[![npm version](https://badge.fury.io/js/fluxxor-connect.svg)](https://badge.fury.io/js/fluxxor-connect)
+
 ## Installation
 
 ```
@@ -89,4 +91,4 @@ After using `Connect` on your component, you can access the `flux` variable usin
 
 If you are already using tools to minify / transpile your code, you can use the non-transpiled version to reduce bundle size.
 
-`const Connect = require('fluxxor-connect/lib/es6')`
+`const Connect = require('fluxxor-connect/lib/es6');`
