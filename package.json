@@ -1,6 +1,6 @@
 {
   "name": "fluxxor-connect",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Loose implementation of Redux's connect with Fluxxor",
   "main": "lib/index.js",
   "scripts": {
