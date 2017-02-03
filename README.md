@@ -1,8 +1,8 @@
+[![npm version](https://badge.fury.io/js/fluxxor-connect.svg)](https://badge.fury.io/js/fluxxor-connect)
+
 # fluxxor-connect
 
 Loose implementation of Redux's connect with Fluxxor.
-
-[![npm version](https://badge.fury.io/js/fluxxor-connect.svg)](https://badge.fury.io/js/fluxxor-connect)
 
 ## Installation
 
@@ -78,7 +78,7 @@ You can use it to filter the state from the store using your component's props.
 Connect({
     store: 'FOO_STORE',
     state: (store, ownProps) => ({
-        foo: store.foo + ownprops.bar
+        foo: store.foo + ownProps.bar
     })
 })
 ```
