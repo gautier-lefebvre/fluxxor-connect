@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublish": "npm run build",
-    "build": "mkdirp lib/es6 && npm run build_es5 && npm run build_es6",
+    "build": "npm run clean && mkdirp lib/es6 && npm run build_es5 && npm run build_es6",
     "build_es5": "babel src/Connect.jsx --out-file lib/index.js --presets=react,es2015,stage-1",
     "build_es6": "babel src/Connect.jsx --out-file lib/es6/index.js --presets=react",
     "clean": "rimraf lib"

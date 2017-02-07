@@ -16,10 +16,12 @@ module.exports = (...params) => Component => React.createClass({
     displayName: 'FluxxorConnect',
 
     mixins: [
+        // put flux from fluxxor into the component
         FluxMixin
     ],
 
     getInitialState: function () {
+        // initialize the component state from the given store
         return this.getStateFromFlux();
     },
 
@@ -28,14 +30,26 @@ module.exports = (...params) => Component => React.createClass({
 
         this.mounted = true;
 
-        this._getStateFromFlux = () => {
-            if (this.mounted) {
-                this.getStateFromFlux && this.setState(this.getStateFromFlux());
-            }
-        };
+        this.callbacks = [];
 
+        // for each given store
+        // listen to the given event (or 'change' by default) and update the state
         forEach(params, storeAndState => {
-            flux.store(storeAndState.store).on(storeAndState.event || 'change', this._getStateFromFlux);
+            const store = flux.store(storeAndState.store);
+            let event = storeAndState.event || 'change';
+
+            const reference = () => {
+                // we check if the component is still mounted just in case
+                if (this.mounted) {
+                    this.setState(storeAndState.state.call(this, store, this.props));
+                }
+            };
+
+            // listen to the event
+            store.on(event, reference);
+
+            // we store the callback reference so we can unsubscribe later
+            this.callbacks.push({ store, reference, event });
         });
     },
 
@@ -44,24 +58,23 @@ module.exports = (...params) => Component => React.createClass({
 
         this.mounted = false;
 
-        forEach(params, storeAndState => {
-            flux.store(storeAndState.store).removeListener(storeAndState.event || 'change', this._getStateFromFlux);
+        // we unsubscribe from the events we subscribed to in componentWillMount
+        forEach(this.callbacks, callback => {
+            callback.store.removeListener(callback.event, callback.reference);
         });
     },
 
     getStateFromFlux: function () {
         const flux = this.getFlux();
 
+        // we merge all given stores' state
         return reduce(
             params,
             (state, storeAndState) => {
-                if (!isFunction(storeAndState.state)) {
-                    return state;
-                }
-
                 return merge(state, storeAndState.state.call(this, flux.store(storeAndState.store), this.props));
             },
-            {});
+            {}
+        );
     },
 
     render: function () {
