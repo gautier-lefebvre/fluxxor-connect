@@ -1,0 +1,31 @@
+{
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": [
+      "jsdoc",
+      "closure"
+    ]
+  },
+  "source": {
+    "include": [
+      "./src"
+    ],
+    "includePattern": ".+\\.js(doc|x)?$"
+  },
+  "plugins": [],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  },
+  "opts": {
+    // same as -e utf8
+    "encoding": "utf8",
+    // same as -d ./out/
+    "destination": "./docs/",
+    // same as -r
+    "recurse": true,
+    "private": true,
+    "template": "node_modules/docdash",
+    "readme" : "./README.md"
+  }
+}
