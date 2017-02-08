@@ -117,3 +117,4 @@ module.exports = (...params) => Component => React.createClass({
     );
   },
 });
+
