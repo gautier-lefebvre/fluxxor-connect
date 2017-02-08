@@ -54,8 +54,6 @@ module.exports = (...params) => Component => React.createClass({
     },
 
     componentWillUnmount: function () {
-        const flux = this.getFlux();
-
         this.mounted = false;
 
         // we unsubscribe from the events we subscribed to in componentWillMount
