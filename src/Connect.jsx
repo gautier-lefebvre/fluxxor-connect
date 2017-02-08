@@ -1,16 +1,41 @@
 'use strict';
+/**
+ * @module fluxxor-connect
+ */
 
 const forEach = require('lodash.foreach');
 const merge = require('lodash.merge');
-const isFunction = require('lodash.isfunction');
 const reduce = require('lodash.reduce');
+
 const React = require('react');
 const Fluxxor = require('fluxxor');
 
 const FluxMixin = Fluxxor.FluxMixin(React);
 
 /**
- *  @param params - { store: 'STORE_NAME', state: store => ({ a: store.a }), event: '' }
+ * Transform store values into a calculated state for your component
+ * @callback ConnectParameter~connectState
+ * @param {object} store - The Fluxxor store component or any object than hold wanted values
+ * @returns {object} - The calculated state
+ */
+
+/**
+ * @typedef {object} ConnectParameter
+ * @property {string} store - The name of your store, for example 'AUTH_STORE'
+ * @property {ConnectParameter~connectState} state - Transform store values into a calculated state for your component
+ * @property {string} event - The event the store emits and that you want to listen to ('change' by default)
+ */
+
+/**
+ * @typedef {function} ConnectHighOrderComponent
+ * @param {React.Component} Component
+ * @returns {object}
+ */
+
+/**
+ *  @typedef {function} Connect
+ *  @param {...ConnectParameter} params - { store: 'STORE_NAME', state: store => ({ a: store.a }), event: '' }
+ *  @returns {ConnectHighOrderComponent}
  */
 module.exports = (...params) => Component => React.createClass({
     displayName: 'FluxxorConnect',
