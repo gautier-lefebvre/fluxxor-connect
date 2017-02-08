@@ -1,4 +1,17 @@
+# Generated content
 lib/
+
+# Project dependencies
 node_modules/
+
+# IDE
 .idea/
+
+# Jsdoc
 docs/
+
+# Eslint, etc..
+test/
+
+# NPM
+npm-debug.log

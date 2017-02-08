@@ -6,13 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublish": "npm run build",
-    "build": "npm run clean && mkdirp lib/es6 && npm run build_es5 && npm run build_es6",
+    "build": "npm run clean:lib && mkdirp lib/es6 && npm run build_es5 && npm run build_es6",
     "build_es5": "babel src/Connect.jsx --out-file lib/index.js --presets=react,es2015,stage-1",
     "build_es6": "babel src/Connect.jsx --out-file lib/es6/index.js --presets=react",
-    "clean": "rimraf lib",
+    "clean:lib": "rimraf lib",
     "clean:doc": "rimraf docs",
     "jsdoc": "jsdoc -c jsdoc.conf.json",
-    "doc": "npm run clean:doc && npm run jsdoc"
+    "doc": "npm run clean:doc && npm run jsdoc",
+    "lint" : "eslint **/src/** -o ./test/eslint.html -f html",
+    "lint:fix" : "eslint --fix **/src/** -o ./test/eslint.html -f html"
   },
   "repository": {
     "type": "git",
@@ -44,6 +46,11 @@
     "babel-preset-react": "^6.22.0",
     "babel-preset-stage-1": "^6.22.0",
     "docdash": "^0.4.0",
+    "eslint": "^3.15.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^6.9.0",
     "jsdoc": "^3.4.3",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.5.4"
