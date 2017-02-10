@@ -14,7 +14,7 @@ npm install fluxxor-connect
 
 ### Accessing stores
 
-```
+```js
 var React = require('react');
 
 // require the module
@@ -55,7 +55,7 @@ module.exports = Connect({
 By default, `Connect` will listen for the `change` event of each of the store you provided (provode ?).
 To make `Connect` listen to another event, you can pass an additional `event` parameter in the store parameter, like so:
 
-```
+```js
 Connect({
     store: 'FOO_STORE',
     state: store => ({
@@ -74,7 +74,7 @@ The name of the keys of the state must be unique, otherwise they will be overwri
 The `state` method you give to `Connect` can take an additional parameter: the `props` of your component.
 You can use it to filter the state from the store using your component's props.
 
-```
+```js
 Connect({
     store: 'FOO_STORE',
     state: (store, ownProps) => ({
@@ -91,4 +91,6 @@ After using `Connect` on your component, you can access the `flux` variable usin
 
 If you are already using tools to minify / transpile your code, you can use the non-transpiled version to reduce bundle size.
 
-`const Connect = require('fluxxor-connect/lib/es6');`
+```js
+const Connect = require('fluxxor-connect/lib/es6');
+```
