@@ -1,0 +1,2 @@
+# Set default endofline to LF as it is needed by airbnb style guide
+* text eol=lf
