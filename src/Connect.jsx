@@ -5,6 +5,8 @@
 const forEach = require('lodash.foreach');
 const merge = require('lodash.merge');
 const reduce = require('lodash.reduce');
+const isEqual = require('lodash.isequal');
+const pick = require('lodash.pick');
 
 const React = require('react');
 const Fluxxor = require('fluxxor');
@@ -52,6 +54,17 @@ module.exports = (...params) => Component => React.createClass({
     return this.getStateFromFlux();
   },
 
+  getProps(props) {
+    // if the parameter is a string, return an array with one entry
+    // else if the parameter is an array, return the parameter
+    // else return null
+    return typeof props === 'string' ?
+      [ props ]
+      : Array.isArray(props) ?
+        props
+        : null;
+  },
+
   componentWillMount() {
     const flux = this.getFlux();
 
@@ -64,11 +77,14 @@ module.exports = (...params) => Component => React.createClass({
     forEach(params, (storeAndState) => {
       const store = flux.store(storeAndState.store);
       const event = storeAndState.event || 'change';
+      const watchedProps = this.getProps(storeAndState.watchedProps);
 
-      const reference = () => {
-                // we check if the component is still mounted just in case
+      const reference = (props) => {
+        props = props || this.props;
+
+        // we check if the component is still mounted just in case
         if (this.mounted) {
-          this.setState(storeAndState.state.call(this, store, this.props));
+          this.setState(storeAndState.state.call(this, store, props));
         }
       };
 
@@ -76,7 +92,23 @@ module.exports = (...params) => Component => React.createClass({
       store.on(event, reference);
 
       // we store the callback reference so we can unsubscribe later
-      this.callbacks.push({ store, reference, event });
+      this.callbacks.push({ store, reference, event, watchedProps });
+    });
+  },
+
+  componentWillReceiveProps(nextProps) {
+    // for each watched store, update if a watched prop has changed
+    forEach(this.callbacks, callback => {
+      if (callback.watchedProps && callback.watchedProps.length) {
+        // create objects containing only the watched props for this parameter
+        const nextWatchedProps = pick(nextProps, callback.watchedProps);
+        const currentWatchedProps = pick(this.props, callback.watchedProps);
+
+        // if a prop changed, call the given 'state' function with next props
+        if (!isEqual(nextWatchedProps, currentWatchedProps)) {
+          callback.reference(nextProps);
+        }
+      }
     });
   },
 
