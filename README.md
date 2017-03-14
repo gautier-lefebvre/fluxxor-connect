@@ -83,6 +83,24 @@ Connect({
 })
 ```
 
+### Watching props change
+
+If your state depends on your props (see above example), you can specify an additional parameter: `props`, which will be the name of the props to watch for changes.
+
+```js
+Connect({
+    store: 'FOO_STORE',
+    state: (store, ownProps) => ({
+        foo: store.foo + ownProps.bar
+    }),
+    watchedProps: [ 'bar' ]
+})
+```
+
+In this example, if the `bar` prop of your component is changed, your `state` function will be called.
+
+Additionally, if you only have one prop to watch, you can pass it directly instead of a one-item array (i.e. `watchedProps: 'bar'`).
+
 ### Accessing flux
 
 After using `Connect` on your component, you can access the `flux` variable using `this.props.flux`.
