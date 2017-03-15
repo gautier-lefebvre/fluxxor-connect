@@ -85,7 +85,7 @@ Connect({
 
 ### Watching props change
 
-If your state depends on your props (see above example), you can specify an additional parameter: `props`, which will be the name of the props to watch for changes.
+If your state depends on your props (see above example), you can specify an additional parameter: `watchedProps`, which will be the name of the props to watch for changes.
 
 ```js
 Connect({
@@ -98,6 +98,8 @@ Connect({
 ```
 
 In this example, if the `bar` prop of your component is changed, your `state` function will be called.
+
+The specified props will be fetched using `lodash.get` function, so you can pass nested props paths such as `'foo.bar'` (see [their doc](https://lodash.com/docs/4.17.4#get) for more information).
 
 Additionally, if you only have one prop to watch, you can pass it directly instead of a one-item array (i.e. `watchedProps: 'bar'`).
 

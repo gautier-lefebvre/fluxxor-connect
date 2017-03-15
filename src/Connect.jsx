@@ -6,7 +6,7 @@ const forEach = require('lodash.foreach');
 const merge = require('lodash.merge');
 const reduce = require('lodash.reduce');
 const isEqual = require('lodash.isequal');
-const pick = require('lodash.pick');
+const get = require('lodash.get');
 
 const React = require('react');
 const Fluxxor = require('fluxxor');
@@ -100,14 +100,22 @@ module.exports = (...params) => Component => React.createClass({
     // for each watched store, update if a watched prop has changed
     forEach(this.callbacks, callback => {
       if (callback.watchedProps && callback.watchedProps.length) {
-        // create objects containing only the watched props for this parameter
-        const nextWatchedProps = pick(nextProps, callback.watchedProps);
-        const currentWatchedProps = pick(this.props, callback.watchedProps);
 
-        // if a prop changed, call the given 'state' function with next props
-        if (!isEqual(nextWatchedProps, currentWatchedProps)) {
-          callback.reference(nextProps);
-        }
+        // check each watched prop individually
+        // we can't use 'pick(nextProps, callback.watchedProps)
+        // because it does not work with nested prop names ('props.foo.bar')
+        forEach(callback.watchedProps, propName => {
+          const nextWatchedProp = get(nextProps, propName);
+          const currentWatchedProp = get(this.props, propName);
+
+          // if a prop changed, call the given 'state' function with next props
+          if (!isEqual(nextWatchedProp, currentWatchedProp)) {
+            callback.reference(nextProps);
+
+            // return false to stop forEach
+            return false;
+          }
+        });
       }
     });
   },
