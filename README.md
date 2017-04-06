@@ -65,7 +65,23 @@ Connect({
 })(Component);
 ```
 
-You can put the same store several times (to listen to different events).
+You can put the same store several times (to listen to different events), or you can put multiple events for the same callback.
+
+```js
+Connect({
+    store: 'FOO_STORE',
+    state: store => ({
+        foo: store.foo,
+        bar: store.bar
+    }),
+    event: [ 'foo:bar', 'bar:foo' ]
+}, {
+    store: 'FOO_STORE',
+    state: store => ({
+        foobar: store.foobar
+    })
+})(Component);
+```
 
 The name of the keys of the state must be unique, otherwise they will be overwritten.
 

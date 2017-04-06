@@ -76,7 +76,7 @@ module.exports = (...params) => Component => React.createClass({
     // listen to the given event (or 'change' by default) and update the state
     forEach(params, (storeAndState) => {
       const store = flux.store(storeAndState.store);
-      const event = storeAndState.event || 'change';
+      const events = storeAndState.event || 'change';
       const watchedProps = this.getProps(storeAndState.watchedProps);
 
       const reference = (props) => {
@@ -88,11 +88,14 @@ module.exports = (...params) => Component => React.createClass({
         }
       };
 
-      // listen to the event
-      store.on(event, reference);
+      forEach(Array.isArray(events) ? events : [ events ], event => {
+        // listen to the event
+        store.on(event, reference);
+      })
+
 
       // we store the callback reference so we can unsubscribe later
-      this.callbacks.push({ store, reference, event, watchedProps });
+      this.callbacks.push({ store, reference, events, watchedProps });
     });
   },
 
@@ -125,7 +128,9 @@ module.exports = (...params) => Component => React.createClass({
 
     // we unsubscribe from the events we subscribed to in componentWillMount
     forEach(this.callbacks, (callback) => {
-      callback.store.removeListener(callback.event, callback.reference);
+      forEach(callback.events, (event) => {
+        callback.store.removeListener(callback.event, callback.reference);
+      });
     });
   },
 
