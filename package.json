@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/gautier-lefebvre/fluxxor-connect#readme",
   "dependencies": {
+    "create-react-class": "^15.5.2",
     "fluxxor": "^1.7.3",
     "lodash.foreach": "^4.5.0",
     "lodash.get": "^4.4.2",

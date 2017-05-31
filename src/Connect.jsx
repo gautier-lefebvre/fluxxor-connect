@@ -9,6 +9,7 @@ const isEqual = require('lodash.isequal');
 const get = require('lodash.get');
 
 const React = require('react');
+const createReactClass = require('create-react-class');
 const Fluxxor = require('fluxxor');
 
 const FluxMixin = Fluxxor.FluxMixin(React);
@@ -41,7 +42,7 @@ const FluxMixin = Fluxxor.FluxMixin(React);
  *  { store: 'STORE_NAME', state: store => ({ a: store.a }), event: '' }
  *  @returns {ConnectHighOrderComponent}
  */
-module.exports = (...params) => Component => React.createClass({
+module.exports = (...params) => Component => createReactClass({
   displayName: 'FluxxorConnect',
 
   mixins: [
@@ -68,6 +69,9 @@ module.exports = (...params) => Component => React.createClass({
   componentWillMount() {
     const flux = this.getFlux();
 
+    // init wrapped component
+    this.wrappedInstance = null;
+
     this.mounted = true;
 
     this.callbacks = [];
@@ -92,7 +96,6 @@ module.exports = (...params) => Component => React.createClass({
         // listen to the event
         store.on(event, reference);
       })
-
 
       // we store the callback reference so we can unsubscribe later
       this.callbacks.push({ store, reference, events, watchedProps });
@@ -139,17 +142,27 @@ module.exports = (...params) => Component => React.createClass({
 
     // we merge all given stores' state
     return reduce(
-            params,
-            (state, storeAndState) => merge(
-                state,
-                storeAndState.state.call(
-                    this,
-                    flux.store(storeAndState.store),
-                    this.props,
-                ),
-            ),
-            {},
-        );
+      params,
+      (state, storeAndState) => merge(
+        state,
+        storeAndState.state.call(
+          this,
+          flux.store(storeAndState.store),
+          this.props
+        ),
+      ),
+      {},
+    );
+  },
+
+  // sets the wrapped component using react refs
+  setWrappedInstance(el) {
+    this.wrappedInstance = el;
+  },
+
+  // returns the wrapped component so the parent component can use refs
+  getWrappedInstance() {
+    return this.wrappedInstance;
   },
 
   render() {
@@ -157,6 +170,7 @@ module.exports = (...params) => Component => React.createClass({
       <Component
         {...this.props}
         {...this.state}
+        ref={this.setWrappedInstance}
         flux={this.getFlux()}
       />
     );
