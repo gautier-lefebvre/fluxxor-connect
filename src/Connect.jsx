@@ -6,6 +6,8 @@ const forEach = require('lodash.foreach');
 const merge = require('lodash.merge');
 const reduce = require('lodash.reduce');
 const isEqual = require('lodash.isequal');
+const isBoolean = require('lodash.isboolean');
+const keys = require('lodash.keys');
 const get = require('lodash.get');
 
 const React = require('react');
@@ -105,23 +107,33 @@ module.exports = (...params) => Component => createReactClass({
   componentWillReceiveProps(nextProps) {
     // for each watched store, update if a watched prop has changed
     forEach(this.callbacks, callback => {
-      if (callback.watchedProps && callback.watchedProps.length) {
+      let hasChanged = false;
 
-        // check each watched prop individually
-        // we can't use 'pick(nextProps, callback.watchedProps)
-        // because it does not work with nested prop names ('props.foo.bar')
-        forEach(callback.watchedProps, propName => {
-          const nextWatchedProp = get(nextProps, propName);
-          const currentWatchedProp = get(this.props, propName);
+      // if the wachedProps is set to true, we compare the entire props object
+      // else we compare only the specified props, if any
+      const propsToCompare = (
+        isBoolean(callback.watchedProps) && callback.watchedProps ?
+          keys(this.props)
+          : Array.isArray(callback.watchedProps) && !!callback.watchedProps.length ?
+            callback.watchedProps
+            : null
+      );
 
-          // if a prop changed, call the given 'state' function with next props
-          if (!isEqual(nextWatchedProp, currentWatchedProp)) {
-            callback.reference(nextProps);
+      // check each watched prop individually
+      // we can't use 'pick(nextProps, callback.watchedProps)
+      // because it does not work with nested prop names ('props.foo.bar')
+      forEach(propsToCompare, propName => {
+        const nextWatchedProp = get(nextProps, propName);
+        const currentWatchedProp = get(this.props, propName);
 
-            // return false to stop forEach
-            return false;
-          }
-        });
+        // if a prop changed, call the given 'state' function with next props
+        if (!isEqual(nextWatchedProp, currentWatchedProp)) {
+          return !(hasChanged = true);
+        }
+      });
+
+      if (hasChanged) {
+        callback.reference(nextProps);
       }
     });
   },

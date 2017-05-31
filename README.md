@@ -119,6 +119,8 @@ The specified props will be fetched using `lodash.get` function, so you can pass
 
 Additionally, if you only have one prop to watch, you can pass it directly instead of a one-item array (i.e. `watchedProps: 'bar'`).
 
+If you want to watch every prop, you can pass `watchProps: true` directly.
+
 ### Accessing flux
 
 After using `Connect` on your component, you can access the `flux` variable using `this.props.flux`.
