@@ -119,9 +119,65 @@ The specified props will be fetched using `lodash.get` function, so you can pass
 
 Additionally, if you only have one prop to watch, you can pass it directly instead of a one-item array (i.e. `watchedProps: 'bar'`).
 
+If you want to watch every prop, you can pass `watchProps: true` directly.
+
 ### Accessing flux
 
 After using `Connect` on your component, you can access the `flux` variable using `this.props.flux`.
+
+### Accessing the wrapped component instance
+
+Like `redux`, you can access the wrapped component using `getWrappedInstance()` on the React element.
+
+In the example below, the `Foo` component is wrapped using Connect, and rendered by the `Bar` Component.
+`Foo` implements a `getFoo` method, which `Bar` can now access using references.
+
+```js
+@Connect({
+    // ...
+})
+class Foo extends React.Component {
+    // a public method
+    getFoo() {
+        return this.foo;
+    }
+
+    render() {
+        return (
+            // ...
+        )
+    }
+}
+```
+
+```js
+class Bar extends React.Component {
+    getFoo() {
+        return this.el.getFoo();
+    }
+
+    @autobind
+    setRef(el) {
+        this.el = el.getWrappedInstance();
+    }
+
+    render() {
+        return (
+            <Foo
+                ref={this.setRef}
+            />
+        )
+    }
+}
+```
+
+Do not use this:
+```js
+<Foo
+    ref={el => this.el = el.getWrappedInstance()}
+/>
+```
+See this [React issue](https://github.com/facebook/react/issues/4533).
 
 ## Using non-transpiled module
 

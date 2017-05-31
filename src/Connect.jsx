@@ -6,9 +6,12 @@ const forEach = require('lodash.foreach');
 const merge = require('lodash.merge');
 const reduce = require('lodash.reduce');
 const isEqual = require('lodash.isequal');
+const isBoolean = require('lodash.isboolean');
+const keys = require('lodash.keys');
 const get = require('lodash.get');
 
 const React = require('react');
+const createReactClass = require('create-react-class');
 const Fluxxor = require('fluxxor');
 
 const FluxMixin = Fluxxor.FluxMixin(React);
@@ -41,7 +44,7 @@ const FluxMixin = Fluxxor.FluxMixin(React);
  *  { store: 'STORE_NAME', state: store => ({ a: store.a }), event: '' }
  *  @returns {ConnectHighOrderComponent}
  */
-module.exports = (...params) => Component => React.createClass({
+module.exports = (...params) => Component => createReactClass({
   displayName: 'FluxxorConnect',
 
   mixins: [
@@ -68,6 +71,9 @@ module.exports = (...params) => Component => React.createClass({
   componentWillMount() {
     const flux = this.getFlux();
 
+    // init wrapped component
+    this.wrappedInstance = null;
+
     this.mounted = true;
 
     this.callbacks = [];
@@ -93,7 +99,6 @@ module.exports = (...params) => Component => React.createClass({
         store.on(event, reference);
       })
 
-
       // we store the callback reference so we can unsubscribe later
       this.callbacks.push({ store, reference, events, watchedProps });
     });
@@ -102,23 +107,33 @@ module.exports = (...params) => Component => React.createClass({
   componentWillReceiveProps(nextProps) {
     // for each watched store, update if a watched prop has changed
     forEach(this.callbacks, callback => {
-      if (callback.watchedProps && callback.watchedProps.length) {
+      let hasChanged = false;
 
-        // check each watched prop individually
-        // we can't use 'pick(nextProps, callback.watchedProps)
-        // because it does not work with nested prop names ('props.foo.bar')
-        forEach(callback.watchedProps, propName => {
-          const nextWatchedProp = get(nextProps, propName);
-          const currentWatchedProp = get(this.props, propName);
+      // if the wachedProps is set to true, we compare the entire props object
+      // else we compare only the specified props, if any
+      const propsToCompare = (
+        isBoolean(callback.watchedProps) && callback.watchedProps ?
+          keys(this.props)
+          : Array.isArray(callback.watchedProps) && !!callback.watchedProps.length ?
+            callback.watchedProps
+            : null
+      );
 
-          // if a prop changed, call the given 'state' function with next props
-          if (!isEqual(nextWatchedProp, currentWatchedProp)) {
-            callback.reference(nextProps);
+      // check each watched prop individually
+      // we can't use 'pick(nextProps, callback.watchedProps)
+      // because it does not work with nested prop names ('props.foo.bar')
+      forEach(propsToCompare, propName => {
+        const nextWatchedProp = get(nextProps, propName);
+        const currentWatchedProp = get(this.props, propName);
 
-            // return false to stop forEach
-            return false;
-          }
-        });
+        // if a prop changed, call the given 'state' function with next props
+        if (!isEqual(nextWatchedProp, currentWatchedProp)) {
+          return !(hasChanged = true);
+        }
+      });
+
+      if (hasChanged) {
+        callback.reference(nextProps);
       }
     });
   },
@@ -139,17 +154,27 @@ module.exports = (...params) => Component => React.createClass({
 
     // we merge all given stores' state
     return reduce(
-            params,
-            (state, storeAndState) => merge(
-                state,
-                storeAndState.state.call(
-                    this,
-                    flux.store(storeAndState.store),
-                    this.props,
-                ),
-            ),
-            {},
-        );
+      params,
+      (state, storeAndState) => merge(
+        state,
+        storeAndState.state.call(
+          this,
+          flux.store(storeAndState.store),
+          this.props
+        ),
+      ),
+      {},
+    );
+  },
+
+  // sets the wrapped component using react refs
+  setWrappedInstance(el) {
+    this.wrappedInstance = el;
+  },
+
+  // returns the wrapped component so the parent component can use refs
+  getWrappedInstance() {
+    return this.wrappedInstance;
   },
 
   render() {
@@ -157,6 +182,7 @@ module.exports = (...params) => Component => React.createClass({
       <Component
         {...this.props}
         {...this.state}
+        ref={this.setWrappedInstance}
         flux={this.getFlux()}
       />
     );
