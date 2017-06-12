@@ -2,17 +2,18 @@
  * @module fluxxor-connect
  */
 
-const forEach = require('lodash.foreach');
-const merge = require('lodash.merge');
-const reduce = require('lodash.reduce');
-const isEqual = require('lodash.isequal');
-const isBoolean = require('lodash.isboolean');
-const keys = require('lodash.keys');
-const get = require('lodash.get');
-
-const React = require('react');
 const createReactClass = require('create-react-class');
 const Fluxxor = require('fluxxor');
+const forEach = require('lodash.foreach');
+const get = require('lodash.get');
+const isBoolean = require('lodash.isboolean');
+const isEqual = require('lodash.isequal');
+const isString = require('lodash.isstring');
+const keys = require('lodash.keys');
+const merge = require('lodash.merge');
+const React = require('react');
+const reduce = require('lodash.reduce');
+const some = require('lodash.some');
 
 const FluxMixin = Fluxxor.FluxMixin(React);
 
@@ -110,23 +111,17 @@ module.exports = (...params) => Component => createReactClass({
   componentWillReceiveProps(nextProps) {
     // for each watched store, update if a watched prop has changed
     forEach(this.callbacks, (callback) => {
-      let hasChanged = false;
-
       // check each watched prop individually
       // we can't use 'pick(nextProps, callback.watchedProps)
       // because it does not work with nested prop names ('props.foo.bar')
-      forEach(callback.watchedProps, (propName) => {
+      const hasChanged = some(callback.watchedProps, (propName) => {
         const nextWatchedProp = get(nextProps, propName);
         const currentWatchedProp = get(this.props, propName);
 
-        // if a prop changed, call the given 'state' function with next props
-        if (!isEqual(nextWatchedProp, currentWatchedProp)) {
-          hasChanged = true;
-        }
-
-        return !hasChanged;
+        return !isEqual(nextWatchedProp, currentWatchedProp);
       });
 
+      // if a prop changed, call the given 'state' function with next props
       if (hasChanged) {
         callback.reference(nextProps);
       }
@@ -162,7 +157,9 @@ module.exports = (...params) => Component => createReactClass({
         state,
         storeAndState.state.call(
           this,
-          flux.store(storeAndState.store),
+          Array.isArray(storeAndState.store) ?
+            storeAndState.store.map(storeName => flux.store(storeName))
+            : flux.store(storeAndState.store),
           this.props,
         ),
       ),
@@ -186,7 +183,7 @@ module.exports = (...params) => Component => createReactClass({
     // else return null
     if (Array.isArray(props) && !!props.length) {
       return props;
-    } else if (typeof props === 'string') {
+    } else if (isString(props)) {
       return [props];
     } else if (isBoolean(props) && !!props) {
       return keys(this.props);
@@ -199,7 +196,7 @@ module.exports = (...params) => Component => createReactClass({
     if (!Array.isArray(store)) {
       if (Array.isArray(events)) {
         return events;
-      } else if (typeof events === 'string') {
+      } else if (isString(events)) {
         return [events];
       }
 
