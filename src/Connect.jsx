@@ -2,8 +2,7 @@
  * @module fluxxor-connect
  */
 
-const createReactClass = require('create-react-class');
-const Fluxxor = require('fluxxor');
+const autobind = require('autobind-decorator');
 const forEach = require('lodash.foreach');
 const get = require('lodash.get');
 const isBoolean = require('lodash.isboolean');
@@ -11,11 +10,10 @@ const isEqual = require('lodash.isequal');
 const isString = require('lodash.isstring');
 const keys = require('lodash.keys');
 const merge = require('lodash.merge');
+const PropTypes = require('prop-types');
 const React = require('react');
 const reduce = require('lodash.reduce');
 const some = require('lodash.some');
-
-const FluxMixin = Fluxxor.FluxMixin(React);
 
 /**
  * Transform store values into a calculated state for your component
@@ -45,18 +43,46 @@ const FluxMixin = Fluxxor.FluxMixin(React);
  *  { store: 'STORE_NAME', state: store => ({ a: store.a }), event: '' }
  *  @returns {ConnectHighOrderComponent}
  */
-module.exports = (...params) => Component => createReactClass({
-  displayName: 'FluxxorConnect',
+module.exports = (...params) => Component => class FluxxorConnect extends React.Component {
+  constructor(props, context) {
+    super(props, context);
 
-  mixins: [
-    // put flux from fluxxor into the component
-    FluxMixin,
-  ],
+    this.state = this.getStateFromFlux();
+  }
 
-  getInitialState() {
-    // initialize the component state from the given store
-    return this.getStateFromFlux();
-  },
+  static get childContextTypes() {
+    return {
+      flux: PropTypes.object,
+    };
+  }
+
+  static get contextTypes() {
+    return {
+      flux: PropTypes.object,
+    };
+  }
+
+  static get propTypes() {
+    return {
+      flux: PropTypes.object,
+    };
+  }
+
+  static get defaultProps() {
+    return {
+      flux: null,
+    };
+  }
+
+  getChildContext() {
+    return {
+      flux: this.getFlux(),
+    };
+  }
+
+  getFlux() {
+    return this.props.flux || (this.context && this.context.flux);
+  }
 
   componentWillMount() {
     const flux = this.getFlux();
@@ -106,7 +132,7 @@ module.exports = (...params) => Component => createReactClass({
       // we store the callback reference so we can unsubscribe later
       this.callbacks.push({ store, reference, events, watchedProps });
     });
-  },
+  }
 
   componentWillReceiveProps(nextProps) {
     // for each watched store, update if a watched prop has changed
@@ -126,7 +152,7 @@ module.exports = (...params) => Component => createReactClass({
         callback.reference(nextProps);
       }
     });
-  },
+  }
 
   componentWillUnmount() {
     this.mounted = false;
@@ -145,7 +171,7 @@ module.exports = (...params) => Component => createReactClass({
         });
       }
     });
-  },
+  }
 
   getStateFromFlux() {
     const flux = this.getFlux();
@@ -165,17 +191,18 @@ module.exports = (...params) => Component => createReactClass({
       ),
       {},
     );
-  },
+  }
 
   // returns the wrapped component so the parent component can use refs
   getWrappedInstance() {
     return this.wrappedInstance;
-  },
+  }
 
   // sets the wrapped component using react refs
+  @autobind
   setWrappedInstance(el) {
     this.wrappedInstance = el;
-  },
+  }
 
   getProps(props) {
     // if the parameter is a string, return an array with one entry
@@ -190,7 +217,7 @@ module.exports = (...params) => Component => createReactClass({
     }
 
     return null;
-  },
+  }
 
   getEvents(events, store) {
     if (!Array.isArray(store)) {
@@ -209,7 +236,7 @@ module.exports = (...params) => Component => createReactClass({
     }
 
     return store.map((s, idx) => this.getEvents(events[idx], s));
-  },
+  }
 
   render() {
     return (
@@ -220,5 +247,5 @@ module.exports = (...params) => Component => createReactClass({
         flux={this.getFlux()}
       />
     );
-  },
-});
+  }
+};

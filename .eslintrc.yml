@@ -1,6 +1,4 @@
 env:
   browser: true
 extends: 'airbnb'
-rules:
-   react/prefer-es6-class:
-    - off
+parser: 'babel-eslint'
