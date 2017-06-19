@@ -22,64 +22,66 @@ var Connect = require('fluxxor-connect');
 
 // create your component
 var Component = React.createClass({
-    render: function () {
-        // your 'foo' and 'bar' props are given to your component by the Connect component below.
-        return (
-            <div>{this.props.foo} {this.props.bar}</div>
-        )
-    }
+  render: function () {
+    // your 'foo' and 'bar' props are given to your component by the Connect component below.
+    return (
+      <div>{this.props.foo} {this.props.bar}</div>
+    )
+  }
 });
 
 // connect your component to your stores
 // you can put as many stores as you want
 // for each store, you must provide a store name and a state function
 module.exports = Connect({
-    // the name of the store, as given in your Fluxxor configuration
-    store: 'FOO_STORE',
-    // the state you want to pick from your store
-    state: function (store) {
-        return {
-            foo: store.foo
-        };
-    }
+  // the name of the store, as given in your Fluxxor configuration
+  store: 'FOO_STORE',
+  // the state you want to pick from your store
+  state: function (store) {
+    return {
+      foo: store.foo
+    };
+  }
 }, {
-    store: 'BAR_STORE',
-    state: function (store) {
-        return {
-            bar: store.bar
-        };
-    }
+  store: 'BAR_STORE',
+  state: function (store) {
+    return {
+      bar: store.bar
+    };
+  }
 })(Component);
 ```
 
-By default, `Connect` will listen for the `change` event of each of the store you provided (provode ?).
+By default, `Connect` will listen for the `'change'` event of each of the store you provided (provode ?).
 To make `Connect` listen to another event, you can pass an additional `event` parameter in the store parameter, like so:
 
 ```js
 Connect({
-    store: 'FOO_STORE',
-    state: store => ({
-        foo: store.foo
-    }),
-    event: 'foo:bar'
+  store: 'FOO_STORE',
+  state: store => ({
+    foo: store.foo
+  }),
+  event: 'foo:bar'
 })(Component);
 ```
+
+If you want to listen for `'change'` too, you need to specify it.
 
 You can put the same store several times (to listen to different events), or you can put multiple events for the same callback.
 
 ```js
 Connect({
-    store: 'FOO_STORE',
-    state: store => ({
-        foo: store.foo,
-        bar: store.bar
-    }),
-    event: [ 'foo:bar', 'bar:foo' ]
+  store: 'FOO_STORE',
+  state: store => ({
+    foo: store.foo,
+    bar: store.bar
+  }),
+  event: [ 'foo:bar', 'bar:foo' ]
 }, {
-    store: 'FOO_STORE',
-    state: store => ({
-        foobar: store.foobar
-    })
+  store: 'FOO_STORE',
+  state: store => ({
+    foobar: store.foobar
+  })
 })(Component);
 ```
 
@@ -92,10 +94,10 @@ You can use it to filter the state from the store using your component's props.
 
 ```js
 Connect({
-    store: 'FOO_STORE',
-    state: (store, ownProps) => ({
-        foo: store.foo + ownProps.bar
-    })
+  store: 'FOO_STORE',
+  state: (store, ownProps) => ({
+    foo: store.foo + ownProps.bar
+  })
 })
 ```
 
@@ -105,11 +107,11 @@ If your state depends on your props (see above example), you can specify an addi
 
 ```js
 Connect({
-    store: 'FOO_STORE',
-    state: (store, ownProps) => ({
-        foo: store.foo + ownProps.bar
-    }),
-    watchedProps: [ 'bar' ]
+  store: 'FOO_STORE',
+  state: (store, ownProps) => ({
+    foo: store.foo + ownProps.bar
+  }),
+  watchedProps: [ 'bar' ]
 })
 ```
 
@@ -119,7 +121,38 @@ The specified props will be fetched using `lodash.get` function, so you can pass
 
 Additionally, if you only have one prop to watch, you can pass it directly instead of a one-item array (i.e. `watchedProps: 'bar'`).
 
-If you want to watch every prop, you can pass `watchProps: true` directly.
+If you want to watch every prop, you can pass `watchedProps: true` directly.
+
+### State depending on multiple store values
+
+In certain cases you might need to filter store values given values from other stores. For example, you can have a store storing the authenticated user data, and another one storing a list of objects. Now, if you want to filter these objects using the currently authenticated user, you can do this:
+
+```js
+@Connect({
+  // specify a list of stores instead of just 1 store
+  store: [ 'FOO_STORE', 'BAR_STORE' ],
+
+  // specify which events to listen for in each store in the same order
+  // for example: here we listen for the 'foo' event in FOO_STORE
+  // and the 'bar' and 'foobar' events in BAR_STORE
+  event: [ 'foo', [ 'bar', 'foobar' ] ],
+
+  // you get the list of stores as first argument of the state method
+  state: ([ fooStore, barStore ], ownProps) => ({
+    foobar: fooStore.objs.filter(item => item._id === barStore.obj._id)
+  })
+})
+```
+
+If you want to listen for 'change' in any of the store, leave `null` (or `'change'`) in the store position in the `event: ` property. In this example, we listen for `'change'` in `FOO_STORE` and `'bar'` in `BAR_STORE`:
+```js
+@Connect({
+  store: [ 'FOO_STORE', 'BAR_STORE' ],
+  event: [ null, 'bar' ]
+})
+```
+
+If you want to listen for `'change'` in all stores, you don't have to specify the `event: ` property.
 
 ### Accessing flux
 
@@ -134,47 +167,47 @@ In the example below, the `Foo` component is wrapped using Connect, and rendered
 
 ```js
 @Connect({
-    // ...
+  // ...
 })
 class Foo extends React.Component {
-    // a public method
-    getFoo() {
-        return this.foo;
-    }
+  // a public method
+  getFoo() {
+    return this.foo;
+  }
 
-    render() {
-        return (
-            // ...
-        )
-    }
+  render() {
+    return (
+      // ...
+    )
+  }
 }
 ```
 
 ```js
 class Bar extends React.Component {
-    getFoo() {
-        return this.el.getFoo();
-    }
+  getFoo() {
+    return this.el.getFoo();
+  }
 
-    @autobind
-    setRef(el) {
-        this.el = el.getWrappedInstance();
-    }
+  @autobind
+  setRef(el) {
+    this.el = el.getWrappedInstance();
+  }
 
-    render() {
-        return (
-            <Foo
-                ref={this.setRef}
-            />
-        )
-    }
+  render() {
+    return (
+      <Foo
+        ref={this.setRef}
+      />
+    )
+  }
 }
 ```
 
 Do not use this:
 ```js
 <Foo
-    ref={el => this.el = el.getWrappedInstance()}
+  ref={el => this.el = el.getWrappedInstance()}
 />
 ```
 See this [React issue](https://github.com/facebook/react/issues/4533).
