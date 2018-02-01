@@ -15,13 +15,13 @@ npm install fluxxor-connect
 ### Accessing stores
 
 ```js
-var React = require('react');
+const React = require('react');
 
 // require the module
-var Connect = require('fluxxor-connect');
+const Connect = require('fluxxor-connect');
 
 // create your component
-var Component = React.createClass({
+const Component = React.createClass({
   render: function () {
     // your 'foo' and 'bar' props are given to your component by the Connect component below.
     return (
